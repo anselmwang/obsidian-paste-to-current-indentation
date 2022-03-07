@@ -233,6 +233,41 @@ export default class PastetoIndentationPlugin extends Plugin {
       });
       newMode.open();
     });
+
+    this.addCommand({
+      id: "clipboard-read-text",
+      name: "Clipboard Read Text",
+      editorCallback: async (editor) => {
+        const clipboard = await navigator.clipboard.readText();
+        editor.replaceSelection(clipboard);
+      }
+    });
+
+    this.addCommand({
+      id: "clipboard-read",
+      name: "Clipboard Read",
+      editorCallback: async (editor) => {
+        let clipboardItems;
+        try {
+          clipboardItems = await navigator.clipboard.read();
+        } catch(error) {
+          new Notice(error);
+          return;
+        }
+
+        let text = null;
+        for(let clipboardItem of clipboardItems)
+        {
+          if(clipboardItem.types.indexOf('text/plain') != -1)
+          {
+            let blob = await clipboardItem.getType('text/plain');
+            text = await blob.text();
+            break;
+          }
+        }
+        editor.replaceSelection(text);
+      }});
+
   }
 
   private async extract_clipboard_data_with_specific_type(clipboard_type: string)
